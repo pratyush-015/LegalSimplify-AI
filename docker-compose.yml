@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # Frontend (Next.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - legal-simplify-network
+
+  # Backend (FastAPI)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${AIzaSyBLlBbSZ-qpp2IG0-jWuvWS-h_RXq3ZrLo}
+      - DATABASE_URL=sqlite:///./legal_simplify.db
+    volumes:
+      - ./backend:/app
+      - uploads:/app/uploads
+    networks:
+      - legal-simplify-network
+
+  # AI Service (Optional separate service)
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - GEMINI_API_KEY=${AIzaSyBLlBbSZ-qpp2IG0-jWuvWS-h_RXq3ZrLo}
+    volumes:
+      - ./ai-service:/app
+    networks:
+      - legal-simplify-network
+
+volumes:
+  uploads:
+
+networks:
+  legal-simplify-network:
+    driver: bridge
